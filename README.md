@@ -1,12 +1,12 @@
-# name-dyndns [![Build Status](https://travis-ci.org/mfycheng/name-dyndns.svg?branch=master)](https://travis-ci.org/mfycheng/name-dyndns) [![GoDoc](https://godoc.org/github.com/mfycheng/name-dyndns?status.svg)](https://godoc.org/github.com/mfycheng/name-dyndns)
-Client that automatically updates name.com DNS records.
+# name-dyndns
+Client that automatically updates name.com DNS records even for IPv6 records.
 
 ## Getting name-dyndns
 
 Since name-dyndns has no external dependencies, you can get it simply by:
 
 ```go
-go get github.com/mfycheng/name-dyndns
+go get github.com/razoralpha/name-dyndns
 ```
 
 ## Requirements

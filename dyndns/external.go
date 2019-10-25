@@ -7,10 +7,11 @@ import (
 )
 
 // Urls contains a set of mirrors in which a
-// raw IP string can be retreived. It is exported
+// raw IP string can be retrieved. It is exported
 // for the intent of modification.
 var (
-	Urls = []string{"http://myexternalip.com/raw"}
+	Urls   = []string{"https://api.ipify.org"}
+	v6Urls = []string{"https://api6.ipify.org"}
 )
 
 func tryMirror(url string) (string, error) {
@@ -34,6 +35,17 @@ func tryMirror(url string) (string, error) {
 // preceding mirrors fail.
 func GetExternalIP() (string, error) {
 	for _, url := range Urls {
+		resp, err := tryMirror(url)
+		if err == nil {
+			return resp, err
+		}
+	}
+
+	return "", errors.New("Could not retreive external IP")
+}
+
+func GetExternalIPv6() (string, error) {
+	for _, url := range v6Urls {
 		resp, err := tryMirror(url)
 		if err == nil {
 			return resp, err

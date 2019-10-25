@@ -4,12 +4,10 @@ package dyndns
 
 import (
 	"fmt"
-	"strings"
+	"github.com/razoralpha/name-dyndns/api"
+	"github.com/razoralpha/name-dyndns/log"
 	"sync"
 	"time"
-
-	"github.com/mfycheng/name-dyndns/api"
-	"github.com/mfycheng/name-dyndns/log"
 )
 
 var wg sync.WaitGroup
@@ -20,32 +18,23 @@ func contains(c api.Config, val string) bool {
 		// is equivalent to the domain (i.e. val == domain).
 		if val == c.Domain && v == "" {
 			return true
-		} else if fmt.Sprintf("%s.%s", v, c.Domain) == val {
+		} else if fmt.Sprintf("%s.%s.", v, c.Domain) == val {
 			return true
 		}
 	}
 	return false
 }
 
-func updateDNSRecord(a api.API, domain, recordID string, newRecord api.DNSRecord) error {
-	log.Logger.Printf("Deleting DNS record for %s.\n", newRecord.Name)
-	err := a.DeleteDNSRecord(domain, newRecord.RecordID)
+func updateDNSRecord(a api.API, newRecord api.DNSRecord) error {
+	log.Logger.Printf("Deleting DNS record for %s: %s\n", newRecord.Host, newRecord.DomainName)
+	err := a.DeleteDNSRecord(newRecord.DomainName, newRecord.RecordID)
 	if err != nil {
 		return err
 	}
 
-	log.Logger.Printf("Creating DNS record for %s: %s\n", newRecord.Name, newRecord)
+	log.Logger.Printf("Creating DNS record for %s: %s\n", newRecord.Host, newRecord.DomainName)
 
-	// Remove the domain from the DNSRecord name.
-	// This is an unfortunate inconsistency from the API
-	// implementation (returns full name, but only requires host)
-	if newRecord.Name == domain {
-		newRecord.Name = ""
-	} else {
-		newRecord.Name = strings.TrimSuffix(newRecord.Name, fmt.Sprintf(".%s", domain))
-	}
-
-	return a.CreateDNSRecord(domain, newRecord)
+	return a.CreateDNSRecord(newRecord)
 }
 
 func runConfig(c api.Config, daemon bool) {
@@ -54,8 +43,20 @@ func runConfig(c api.Config, daemon bool) {
 	a := api.NewAPIFromConfig(c)
 	for {
 		ip, err := GetExternalIP()
+		ipv6, errv6 := GetExternalIPv6()
 		if err != nil {
-			log.Logger.Print("Failed to retreive IP: ")
+			log.Logger.Print("Failed to retreive IPv4: ")
+			if daemon {
+				log.Logger.Printf("Will retry in %d seconds...\n", c.Interval)
+				time.Sleep(time.Duration(c.Interval) * time.Second)
+				continue
+			} else {
+				log.Logger.Println("Giving up.")
+				break
+			}
+		}
+		if errv6 != nil {
+			log.Logger.Print("Failed to retreive IPv6: ")
 			if daemon {
 				log.Logger.Printf("Will retry in %d seconds...\n", c.Interval)
 				time.Sleep(time.Duration(c.Interval) * time.Second)
@@ -84,25 +85,24 @@ func runConfig(c api.Config, daemon bool) {
 		}
 
 		for _, r := range records {
-			if !contains(c, r.Name) {
+			log.Logger.Printf("Checking against %s", r.FQDN)
+			if !contains(c, r.FQDN) {
 				continue
 			}
 
-			// Only A records should be mapped to an IP.
-			// TODO: Support AAAA records.
-			if r.Type != "A" {
-				continue
+			log.Logger.Printf("Running update check for %s.", r.Host)
+			if r.Type == "A" && r.Answer != ip {
+				r.Answer = ip
+				log.Logger.Printf("Updating %s with %s (ipv4)", r.Host, r.Answer)
+			} else if r.Type == "AAAA" && r.Answer != ipv6 {
+				r.Answer = ipv6
+				log.Logger.Printf("Updating %s with %s (ipv6)", r.Host, r.Answer)
 			}
-
-			log.Logger.Printf("Running update check for %s.", r.Name)
-			if r.Content != ip {
-				r.Content = ip
-				err = updateDNSRecord(a, c.Domain, r.RecordID, r)
-				if err != nil {
-					log.Logger.Printf("Failed to update record %s [%s] with IP: %s\n\t%s\n", r.RecordID, r.Name, ip, err)
-				} else {
-					log.Logger.Printf("Updated record %s [%s] with IP: %s\n", r.RecordID, r.Name, ip)
-				}
+			err = updateDNSRecord(a, r)
+			if err != nil {
+				log.Logger.Printf("Failed to update record %s [%s] with IP: %s\n\t%s\n", r.RecordID, r.Host, r.Answer, err)
+			} else {
+				log.Logger.Printf("Updated record `%s` with IP: %s\n", r.Host, r.Answer)
 			}
 		}
 
