@@ -38,10 +38,12 @@ func GetExternalIP() (string, error) {
 		resp, err := tryMirror(url)
 		if err == nil {
 			return resp, err
+		} else {
+			return "", err
 		}
 	}
 
-	return "", errors.New("Could not retreive external IP")
+	return "", errors.New("Could not retreive external IPv4")
 }
 
 func GetExternalIPv6() (string, error) {
@@ -49,8 +51,10 @@ func GetExternalIPv6() (string, error) {
 		resp, err := tryMirror(url)
 		if err == nil {
 			return resp, err
+		} else {
+			return "", err
 		}
 	}
 
-	return "", errors.New("Could not retreive external IP")
+	return "", errors.New("Could not retreive external IPv6")
 }

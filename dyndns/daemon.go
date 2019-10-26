@@ -46,6 +46,7 @@ func runConfig(c api.Config, daemon bool) {
 		ipv6, errv6 := GetExternalIPv6()
 		if err != nil {
 			log.Logger.Print("Failed to retreive IPv4: ")
+			log.Logger.Print(err)
 			if daemon {
 				log.Logger.Printf("Will retry in %d seconds...\n", c.Interval)
 				time.Sleep(time.Duration(c.Interval) * time.Second)
@@ -57,6 +58,7 @@ func runConfig(c api.Config, daemon bool) {
 		}
 		if errv6 != nil {
 			log.Logger.Print("Failed to retreive IPv6: ")
+			log.Logger.Print(err)
 			if daemon {
 				log.Logger.Printf("Will retry in %d seconds...\n", c.Interval)
 				time.Sleep(time.Duration(c.Interval) * time.Second)
