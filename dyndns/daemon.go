@@ -100,9 +100,9 @@ func runConfig(c api.Config, daemon bool) {
 			}
 			err = updateDNSRecord(a, r)
 			if err != nil {
-				log.Logger.Printf("Failed to update record %s [%s] with IP: %s\n\t%s\n", r.RecordID, r.Host, r.Answer, err)
+				log.Logger.Printf("Failed to update record %d [%s] with IP: %s\n\t%s\n", r.RecordID, r.Host, r.Answer, err)
 			} else {
-				log.Logger.Printf("Updated record `%s` with IP: %s\n", r.Host, r.Answer)
+				log.Logger.Printf("Updated record %d [%s] with IP: %s\n", r.RecordID, r.Host, r.Answer)
 			}
 		}
 
