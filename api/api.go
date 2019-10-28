@@ -74,9 +74,8 @@ func (api API) performRequest(method, url string, body io.Reader) (response []by
 	return ioutil.ReadAll(resp.Body)
 }
 
-// CreateDNSRecord creates a DNS record for a given domain. The name
-// field in DNSRecord is in the format [hostname].[domainname]
-func (api API) CreateDNSRecord(record DNSRecord) error {
+// Update DNS records instead of delete create otherwise some error might completely remove your entries
+func (api API) UpdateDNSRecord(record DNSRecord) error {
 	// We need to transform name -> hostname for JSON.
 	var body struct {
 		Host   string `json:"host"`
@@ -96,29 +95,13 @@ func (api API) CreateDNSRecord(record DNSRecord) error {
 	}
 
 	_, apierr := api.performRequest(
-		"POST",
+		"PUT",
 		fmt.Sprintf("%s%s%s%s", api.baseURL, "domains/", record.DomainName, "/records"),
 		bytes.NewBuffer(b),
 	)
 	if apierr != nil {
-		log.Logger.Printf("Error in Create request: %s", apierr)
+		log.Logger.Printf("Error in Update (PUT) request: %s", apierr)
 		return apierr
-	}
-
-	return nil
-}
-
-// DeleteDNSRecord deletes a DNS record for a given domain. The recordID can
-// be retrieved from GetDNSRecords.
-func (api API) DeleteDNSRecord(domain string, recordID int) error {
-	_, err := api.performRequest(
-		"DELETE",
-		fmt.Sprintf("%s%s%s%s%d", api.baseURL, "domains/", domain, "/records/", recordID),
-		nil,
-	)
-	if err != nil {
-		log.Logger.Printf("Error in Delete request: %s", err)
-		return err
 	}
 
 	return nil

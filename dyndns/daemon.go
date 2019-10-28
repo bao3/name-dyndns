@@ -25,18 +25,6 @@ func contains(c api.Config, val string) bool {
 	return false
 }
 
-func updateDNSRecord(a api.API, newRecord api.DNSRecord) error {
-	log.Logger.Printf("Deleting DNS record for %s: %s\n", newRecord.Host, newRecord.DomainName)
-	err := a.DeleteDNSRecord(newRecord.DomainName, newRecord.RecordID)
-	if err != nil {
-		return err
-	}
-
-	log.Logger.Printf("Creating DNS record for %s: %s\n", newRecord.Host, newRecord.DomainName)
-
-	return a.CreateDNSRecord(newRecord)
-}
-
 func runConfig(c api.Config, daemon bool) {
 	defer wg.Done()
 
@@ -96,11 +84,13 @@ func runConfig(c api.Config, daemon bool) {
 			if r.Type == "A" && r.Answer != ip {
 				r.Answer = ip
 				log.Logger.Printf("Updating %s with %s (ipv4)", r.Host, r.Answer)
+				err = a.UpdateDNSRecord(r)
 			} else if r.Type == "AAAA" && r.Answer != ipv6 {
 				r.Answer = ipv6
 				log.Logger.Printf("Updating %s with %s (ipv6)", r.Host, r.Answer)
+				err = a.UpdateDNSRecord(r)
 			}
-			err = updateDNSRecord(a, r)
+
 			if err != nil {
 				log.Logger.Printf("Failed to update record %d [%s] with IP: %s\n\t%s\n", r.RecordID, r.Host, r.Answer, err)
 			} else {
