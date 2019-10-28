@@ -97,7 +97,7 @@ func (api API) CreateDNSRecord(record DNSRecord) error {
 
 	_, apierr := api.performRequest(
 		"POST",
-		fmt.Sprintf("%s%s%s%s", api.baseURL, "v4/domains/", record.DomainName, "/records"),
+		fmt.Sprintf("%s%s%s%s", api.baseURL, "domains/", record.DomainName, "/records"),
 		bytes.NewBuffer(b),
 	)
 	if apierr != nil {
@@ -113,7 +113,7 @@ func (api API) CreateDNSRecord(record DNSRecord) error {
 func (api API) DeleteDNSRecord(domain string, recordID int) error {
 	_, err := api.performRequest(
 		"DELETE",
-		fmt.Sprintf("%s%s%s%s%d", api.baseURL, "v4/domains/", domain, "/records/", recordID),
+		fmt.Sprintf("%s%s%s%s%d", api.baseURL, "domains/", domain, "/records/", recordID),
 		nil,
 	)
 	if err != nil {
@@ -128,7 +128,7 @@ func (api API) DeleteDNSRecord(domain string, recordID int) error {
 func (api API) GetDNSRecords(domain string) (records []DNSRecord, err error) {
 	resp, err := api.performRequest(
 		"GET",
-		fmt.Sprintf("%s%s%s%s", api.baseURL, "v4/domains/", domain, "/records"),
+		fmt.Sprintf("%s%s%s%s", api.baseURL, "domains/", domain, "/records"),
 		nil,
 	)
 
