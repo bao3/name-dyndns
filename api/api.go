@@ -96,7 +96,7 @@ func (api API) UpdateDNSRecord(record DNSRecord) error {
 
 	_, apierr := api.performRequest(
 		"PUT",
-		fmt.Sprintf("%s%s%s%s", api.baseURL, "domains/", record.DomainName, "/records"),
+		fmt.Sprintf("%s%s%s%s%d", api.baseURL, "domains/", record.DomainName, "/records/", record.RecordID),
 		bytes.NewBuffer(b),
 	)
 	if apierr != nil {
