@@ -44,6 +44,7 @@ func runConfig(c api.Config, daemon bool) {
 				break
 			}
 		}
+		log.Logger.Print("Retrieved IPv4: %s", ip)
 		if errv6 != nil {
 			log.Logger.Print("Failed to retreive IPv6: ")
 			log.Logger.Print(err)
@@ -56,6 +57,7 @@ func runConfig(c api.Config, daemon bool) {
 				break
 			}
 		}
+		log.Logger.Print("Retrieved IPv6: %s", ipv6)
 
 		// GetRecords retrieves a list of DNSRecords,
 		// 1 per hostname with the associated domain.
@@ -75,12 +77,11 @@ func runConfig(c api.Config, daemon bool) {
 		}
 
 		for _, r := range records {
-			log.Logger.Printf("Checking against %s", r.FQDN)
+			log.Logger.Printf("Checking against %s (%s - %s)", r.FQDN, r.Type, r.Answer)
 			if !contains(c, r.FQDN) {
 				continue
 			}
 
-			log.Logger.Printf("Running update check for %s.", r.Host)
 			if r.Type == "A" && r.Answer != ip {
 				r.Answer = ip
 				log.Logger.Printf("Updating %s with %s (ipv4)", r.Host, r.Answer)
@@ -92,9 +93,9 @@ func runConfig(c api.Config, daemon bool) {
 			}
 
 			if err != nil {
-				log.Logger.Printf("Failed to update record %d [%s] with IP: %s\n\t%s\n", r.RecordID, r.Host, r.Answer, err)
+				log.Logger.Printf("Failed to update record [%s] with IP: %s\n\t%s\n", r.FQDN, r.Answer, err)
 			} else {
-				log.Logger.Printf("Updated record %d [%s] with IP: %s\n", r.RecordID, r.Host, r.Answer)
+				log.Logger.Printf("Updated record [%s] with IP: %s\n", r.FQDN, r.Answer)
 			}
 		}
 
