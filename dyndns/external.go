@@ -2,7 +2,9 @@ package dyndns
 
 import (
 	"errors"
+	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -20,13 +22,35 @@ func tryMirror(url string) (string, error) {
 		return "", err
 	}
 
-	defer resp.Body.Close()
+	defer dclose(resp.Body)
 	contents, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
 
 	return string(contents), nil
+}
+
+func tryMirror6(url string) (string, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+
+	defer dclose(resp.Body)
+	contents, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	return string(contents), nil
+}
+
+// Closing connections and handling the errors
+func dclose(c io.Closer) {
+	if err := c.Close(); err != nil {
+		log.Println(err)
+	}
 }
 
 // GetExternalIP retrieves the external facing IP Address.
@@ -48,7 +72,7 @@ func GetExternalIP() (string, error) {
 
 func GetExternalIPv6() (string, error) {
 	for _, url := range v6Urls {
-		resp, err := tryMirror(url)
+		resp, err := tryMirror6(url)
 		if err == nil {
 			return resp, err
 		} else {

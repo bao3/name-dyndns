@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/razoralpha/name-dyndns/api"
 	"github.com/razoralpha/name-dyndns/log"
+	"strings"
 	"sync"
 	"time"
 )
@@ -44,8 +45,8 @@ func runConfig(c api.Config, daemon bool) {
 				break
 			}
 		}
-		log.Logger.Print("Retrieved IPv4: %s", ip)
-		if errv6 != nil {
+		log.Logger.Print("Retrieved IPv4: ", ip)
+		if errv6 != nil || !strings.Contains(ipv6, ":") {
 			log.Logger.Print("Failed to retreive IPv6: ")
 			log.Logger.Print(err)
 			if daemon {
@@ -57,7 +58,7 @@ func runConfig(c api.Config, daemon bool) {
 				break
 			}
 		}
-		log.Logger.Print("Retrieved IPv6: %s", ipv6)
+		log.Logger.Print("Retrieved IPv6: ", ipv6)
 
 		// GetRecords retrieves a list of DNSRecords,
 		// 1 per hostname with the associated domain.
