@@ -34,8 +34,7 @@ func runConfig(c api.Config, daemon bool) {
 		ip, err := GetExternalIP()
 		ipv6, errv6 := GetExternalIPv6()
 		if err != nil {
-			log.Logger.Print("Failed to retreive IPv4: ")
-			log.Logger.Print(err)
+			log.Logger.Print("Failed to retreive IPv4: ", err)
 			if daemon {
 				log.Logger.Printf("Will retry in %d seconds...\n", c.Interval)
 				time.Sleep(time.Duration(c.Interval) * time.Second)
@@ -47,8 +46,8 @@ func runConfig(c api.Config, daemon bool) {
 		}
 		log.Logger.Print("Retrieved IPv4: ", ip)
 		if errv6 != nil || !strings.Contains(ipv6, ":") {
-			log.Logger.Print("Failed to retreive IPv6: ")
-			log.Logger.Print(err)
+			log.Logger.Print("Failed to retreive IPv6: ", err)
+
 			if daemon {
 				log.Logger.Printf("Will retry in %d seconds...\n", c.Interval)
 				time.Sleep(time.Duration(c.Interval) * time.Second)
@@ -84,13 +83,15 @@ func runConfig(c api.Config, daemon bool) {
 			}
 
 			if r.Type == "A" && r.Answer != ip {
+				log.Logger.Printf("Updating %s (%s) with %s (ipv4)", r.Host, r.Answer, ip)
 				r.Answer = ip
-				log.Logger.Printf("Updating %s with %s (ipv4)", r.Host, r.Answer)
 				err = a.UpdateDNSRecord(r)
 			} else if r.Type == "AAAA" && r.Answer != ipv6 {
+				log.Logger.Printf("Updating %s (%s) with %s (ipv6)", r.Host, r.Answer, ip)
 				r.Answer = ipv6
-				log.Logger.Printf("Updating %s with %s (ipv6)", r.Host, r.Answer)
 				err = a.UpdateDNSRecord(r)
+			} else {
+				continue
 			}
 
 			if err != nil {
