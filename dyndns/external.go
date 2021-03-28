@@ -68,7 +68,7 @@ func GetExternalIP() (string, error) {
 		}
 	}
 
-	return "", errors.New("Could not retreive external IPv4")
+	return "", errors.New("Could not retrieve external IPv4")
 }
 
 func GetExternalIPv6() (string, error) {
@@ -83,5 +83,5 @@ func GetExternalIPv6() (string, error) {
 		}
 	}
 
-	return "", errors.New("Could not retreive external IPv6")
+	return "", errors.New("Could not retrieve external IPv6")
 }
