@@ -4,9 +4,10 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
+
+	"github.com/razoralpha/name-dyndns/log"
 )
 
 // Urls contains a set of mirrors in which a
@@ -50,7 +51,7 @@ func tryMirror6(url string) (string, error) {
 // Closing connections and handling the errors
 func dclose(c io.Closer) {
 	if err := c.Close(); err != nil {
-		log.Println(err)
+		log.Logger.Println(err)
 	}
 }
 
@@ -61,27 +62,30 @@ func dclose(c io.Closer) {
 func GetExternalIP() (string, error) {
 	for _, url := range Urls {
 		resp, err := tryMirror(url)
-		if err == nil {
-			return resp, err
+		if err != nil {
+			log.Logger.Printf("Error received from IPv4 address provider %v: %v", url, err)
+			continue
 		} else {
-			return "", err
+			return resp, nil
 		}
 	}
 
-	return "", errors.New("Could not retrieve external IPv4")
+	return "", errors.New("Could not retreive external IPv4")
 }
 
 func GetExternalIPv6() (string, error) {
 	for _, url := range v6Urls {
 		resp, err := tryMirror6(url)
 		if err != nil {
-			return "", err
+			log.Logger.Printf("Error received from IPv6 address provider %v: %v", url, err)
+			continue
 		} else if !strings.Contains(resp, ":") {
-			return "", errors.New("IPv6 address received was not valid")
+			log.Logger.Printf("Bad address received from IPv6 address provider %v: %v", url, err)
+			continue
 		} else {
 			return resp, nil
 		}
 	}
 
-	return "", errors.New("Could not retrieve external IPv6")
+	return "", errors.New("Could not retreive external IPv6")
 }

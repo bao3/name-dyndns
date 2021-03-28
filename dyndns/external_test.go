@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
+
+	"github.com/razoralpha/name-dyndns/log"
 )
 
 func testServerHandler(w http.ResponseWriter, r *http.Request) {
@@ -46,4 +49,9 @@ func TestGetExternalIPFailure(t *testing.T) {
 	if err == nil {
 		t.Fatal("Should have returned error when no service can be reached")
 	}
+}
+
+func TestMain(m *testing.M) {
+	log.Init(os.Stdout)
+	os.Exit(m.Run())
 }
