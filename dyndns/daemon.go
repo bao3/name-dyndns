@@ -33,25 +33,25 @@ func runConfig(c api.Config, daemon bool) {
 	for {
 		ip, err := GetExternalIP()
 		if err != nil {
-			log.Logger.Print("Failed to retrieve IPv4: ", err)
+			log.Logger.Println("Failed to retrieve IPv4: ", err)
 		} else {
-			log.Logger.Print("Retrieved IPv4: ", ip)
+			log.Logger.Println("Retrieved IPv4: ", ip)
 		}
 		ipv6, err := GetExternalIPv6()
 		if err != nil {
-			log.Logger.Print("Failed to retrieve IPv6: ", err)
+			log.Logger.Println("Failed to retrieve IPv6: ", err)
 		} else {
-			log.Logger.Print("Retrieved IPv6: ", ipv6)
+			log.Logger.Println("Retrieved IPv6: ", ipv6)
 		}
 
 		if ip == "" && ipv6 == "" {
-			log.Logger.Print("Could not retrieve either IPv4 or IPv6 address.")
+			log.Logger.Println("Could not retrieve either IPv4 or IPv6 address.")
 			if daemon {
 				log.Logger.Printf("Will retry in %d seconds...\n", c.Interval)
 				time.Sleep(time.Duration(c.Interval) * time.Second)
 				continue
 			} else {
-				log.Logger.Print("Giving up.")
+				log.Logger.Println("Giving up.")
 				break
 			}
 		}
@@ -68,7 +68,7 @@ func runConfig(c api.Config, daemon bool) {
 				time.Sleep(time.Duration(c.Interval) * time.Second)
 				continue
 			} else {
-				log.Logger.Print("Giving up.")
+				log.Logger.Println("Giving up.")
 				break
 			}
 		}
