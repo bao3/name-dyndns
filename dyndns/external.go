@@ -4,8 +4,10 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
+	"strings"
+
+	"github.com/razoralpha/name-dyndns/log"
 )
 
 // Urls contains a set of mirrors in which a
@@ -49,7 +51,7 @@ func tryMirror6(url string) (string, error) {
 // Closing connections and handling the errors
 func dclose(c io.Closer) {
 	if err := c.Close(); err != nil {
-		log.Println(err)
+		log.Logger.Println(err)
 	}
 }
 
@@ -60,10 +62,11 @@ func dclose(c io.Closer) {
 func GetExternalIP() (string, error) {
 	for _, url := range Urls {
 		resp, err := tryMirror(url)
-		if err == nil {
-			return resp, err
+		if err != nil {
+			log.Logger.Printf("Error received from IPv4 address provider %v: %v", url, err)
+			continue
 		} else {
-			return "", err
+			return resp, nil
 		}
 	}
 
@@ -73,8 +76,12 @@ func GetExternalIP() (string, error) {
 func GetExternalIPv6() (string, error) {
 	for _, url := range v6Urls {
 		resp, err := tryMirror6(url)
-		if err == nil {
-			return resp, err
+		if err != nil {
+			log.Logger.Printf("Error received from IPv6 address provider %v: %v", url, err)
+			continue
+		} else if !strings.Contains(resp, ":") {
+			log.Logger.Printf("Bad address received from IPv6 address provider %v: %v", url, err)
+			continue
 		} else {
 			return "", err
 		}
