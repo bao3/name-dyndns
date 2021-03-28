@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 )
 
 // Urls contains a set of mirrors in which a
@@ -73,10 +74,12 @@ func GetExternalIP() (string, error) {
 func GetExternalIPv6() (string, error) {
 	for _, url := range v6Urls {
 		resp, err := tryMirror6(url)
-		if err == nil {
-			return resp, err
-		} else {
+		if err != nil {
 			return "", err
+		} else if !strings.Contains(resp, ":") {
+			return "", errors.New("IPv6 address received was not valid")
+		} else {
+			return resp, nil
 		}
 	}
 

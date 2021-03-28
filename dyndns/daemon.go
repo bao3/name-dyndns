@@ -4,11 +4,11 @@ package dyndns
 
 import (
 	"fmt"
-	"github.com/razoralpha/name-dyndns/api"
-	"github.com/razoralpha/name-dyndns/log"
-	"strings"
 	"sync"
 	"time"
+
+	"github.com/razoralpha/name-dyndns/api"
+	"github.com/razoralpha/name-dyndns/log"
 )
 
 var wg sync.WaitGroup
@@ -32,32 +32,29 @@ func runConfig(c api.Config, daemon bool) {
 	a := api.NewAPIFromConfig(c)
 	for {
 		ip, err := GetExternalIP()
-		ipv6, errv6 := GetExternalIPv6()
 		if err != nil {
 			log.Logger.Print("Failed to retreive IPv4: ", err)
-			if daemon {
-				log.Logger.Printf("Will retry in %d seconds...\n", c.Interval)
-				time.Sleep(time.Duration(c.Interval) * time.Second)
-				continue
-			} else {
-				log.Logger.Println("Giving up.")
-				break
-			}
+		} else {
+			log.Logger.Print("Retrieved IPv4: ", ip)
 		}
-		log.Logger.Print("Retrieved IPv4: ", ip)
-		if errv6 != nil || !strings.Contains(ipv6, ":") {
+		ipv6, err := GetExternalIPv6()
+		if err != nil {
 			log.Logger.Print("Failed to retreive IPv6: ", err)
+		} else {
+			log.Logger.Print("Retrieved IPv6: ", ipv6)
+		}
 
+		if ip == "" && ipv6 == "" {
+			log.Logger.Print("Could not retreive either IPv4 or IPv6 address.")
 			if daemon {
 				log.Logger.Printf("Will retry in %d seconds...\n", c.Interval)
 				time.Sleep(time.Duration(c.Interval) * time.Second)
 				continue
 			} else {
-				log.Logger.Println("Giving up.")
+				log.Logger.Print("Giving up.")
 				break
 			}
 		}
-		log.Logger.Print("Retrieved IPv6: ", ipv6)
 
 		// GetRecords retrieves a list of DNSRecords,
 		// 1 per hostname with the associated domain.
@@ -82,11 +79,11 @@ func runConfig(c api.Config, daemon bool) {
 				continue
 			}
 
-			if r.Type == "A" && r.Answer != ip {
+			if ip != "" && r.Type == "A" && r.Answer != ip {
 				log.Logger.Printf("Updating %s (%s) with %s (ipv4)", r.Host, r.Answer, ip)
 				r.Answer = ip
 				err = a.UpdateDNSRecord(r)
-			} else if r.Type == "AAAA" && r.Answer != ipv6 {
+			} else if ipv6 != "" && r.Type == "AAAA" && r.Answer != ipv6 {
 				log.Logger.Printf("Updating %s (%s) with %s (ipv6)", r.Host, r.Answer, ip)
 				r.Answer = ipv6
 				err = a.UpdateDNSRecord(r)
