@@ -33,19 +33,19 @@ func runConfig(c api.Config, daemon bool) {
 	for {
 		ip, err := GetExternalIP()
 		if err != nil {
-			log.Logger.Print("Failed to retreive IPv4: ", err)
+			log.Logger.Print("Failed to retrieve IPv4: ", err)
 		} else {
 			log.Logger.Print("Retrieved IPv4: ", ip)
 		}
 		ipv6, err := GetExternalIPv6()
 		if err != nil {
-			log.Logger.Print("Failed to retreive IPv6: ", err)
+			log.Logger.Print("Failed to retrieve IPv6: ", err)
 		} else {
 			log.Logger.Print("Retrieved IPv6: ", ipv6)
 		}
 
 		if ip == "" && ipv6 == "" {
-			log.Logger.Print("Could not retreive either IPv4 or IPv6 address.")
+			log.Logger.Print("Could not retrieve either IPv4 or IPv6 address.")
 			if daemon {
 				log.Logger.Printf("Will retry in %d seconds...\n", c.Interval)
 				time.Sleep(time.Duration(c.Interval) * time.Second)
@@ -62,7 +62,7 @@ func runConfig(c api.Config, daemon bool) {
 		// update it.
 		records, err := a.GetDNSRecords(c.Domain)
 		if err != nil {
-			log.Logger.Printf("Failed to retreive records for %s:\n\t%s\n", c.Domain, err)
+			log.Logger.Printf("Failed to retrieve records for %s:\n\t%s\n", c.Domain, err)
 			if daemon {
 				log.Logger.Printf("Will retry in %d seconds...\n", c.Interval)
 				time.Sleep(time.Duration(c.Interval) * time.Second)
