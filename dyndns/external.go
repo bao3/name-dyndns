@@ -83,7 +83,7 @@ func GetExternalIPv6() (string, error) {
 			log.Logger.Printf("Bad address received from IPv6 address provider %v: %v", url, err)
 			continue
 		} else {
-			return "", err
+			return resp, nil
 		}
 	}
 
