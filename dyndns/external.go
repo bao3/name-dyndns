@@ -14,8 +14,8 @@ import (
 // raw IP string can be retrieved. It is exported
 // for the intent of modification.
 var (
-	Urls   = []string{"https://api.ipify.org"}
-	v6Urls = []string{"https://api6.ipify.org"}
+	Urls   = []string{"https://api-ipv4.ip.sb/ip"}
+	v6Urls = []string{"https://api.ip.sb/ip"}
 )
 
 func tryMirror(url string) (string, error) {
